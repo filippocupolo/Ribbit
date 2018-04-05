@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Net;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Progetto_2._0
 {
@@ -18,16 +19,17 @@ namespace Progetto_2._0
         private object portTCPlocker = new object();
         private object automaticAnswerlocker = new object();
         private volatile bool closeServerTCP;
-        private Form1 form;
+        private SettingsForm settingsForm;
+        Boolean finalClose = false;
         private ServerTCP() { }
 
-        public ServerTCP(int portTCP, string pathDest, bool automaticAnswer, Form1 form)
+        public ServerTCP(int portTCP, string pathDest, bool automaticAnswer, SettingsForm settingsForm)
         {
             this.portTCP = portTCP;
             this.pathDest = pathDest;
             this.automaticAnswer = automaticAnswer;
             this.closeServerTCP = false;
-            this.form = form;
+            this.settingsForm = settingsForm;
         }
         public void Execute() {
 
@@ -39,7 +41,7 @@ namespace Progetto_2._0
                 
                 //create a list of Threads
                 List<Thread> threadList = new List<Thread>();
-
+                
                 //wait for connections
                 Task<TcpClient> task = serverTCP.AcceptTcpClientAsync();
                 
@@ -51,21 +53,20 @@ namespace Progetto_2._0
                         TcpClient connectedSocket = task.Result;
 
                         //create thread to receive file
-                        Receiver r = new Receiver(connectedSocket, AutomaticAnswer, PathDest);
+                        Receiver r = new Receiver(connectedSocket, AutomaticAnswer, PathDest, settingsForm);
                         Thread t = new Thread(r.Execute);
                         t.Start();
-
-                        //check if there are finished thread and remove them
-                        for (int i = 0; i < threadList.Count; i++)
-                        {
-                            if (threadList[i].Join(0))
-                            {
-                                threadList.RemoveAt(i);
-                                i--;
-                            }
-                        }
-
                         threadList.Add(t);
+                    }
+
+                    //check if there are finished thread and remove them
+                    for (int i = 0; i < threadList.Count; i++)
+                    {
+                        if (threadList[i].Join(0))
+                        {
+                            threadList.RemoveAt(i);
+                            i--;
+                        }
                     }
 
                     //if task is completed create another
@@ -77,21 +78,38 @@ namespace Progetto_2._0
 
                 //stop listening for new client (finally)
                 serverTCP.Stop();
-
                 //wait all threads
-                threadList.ForEach(x => { x.Join();});
+                threadList.ForEach(x => { x.Join(); });
+
+                
+                
 
                 //say to form that you finished (finally)
-                form.BeginInvoke(form.CloseThreadDelegate, new object[] { Thread.CurrentThread });
+                if (!finalClose) {
+                    settingsForm.BeginInvoke(settingsForm.CloseThreadDelegate, new object[] { Thread.CurrentThread });
+                }
+                
+                
             }
             catch(Exception e)
             {
-                Console.WriteLine(e.ToString());
+                //InvalidOperationException
+                //ArgumentNullException
+                //ThreadStateException
+                //ThreadInterruptedException
+                //SocketException
+                //ArgumentOutOfRangeException
+                //OutOfMemoryException
+                //AggregateException
+                //ObjectDisposedException
+               
+                
             }
         }
 
-        public void CloseThread (){
+        public void CloseThread (Boolean finalclose){
             closeServerTCP = true;
+            this.finalClose = finalclose;
         }
 
         public int PortTCP

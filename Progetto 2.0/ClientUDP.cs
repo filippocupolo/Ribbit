@@ -15,12 +15,13 @@ namespace Progetto_2._0
         private volatile bool closeClientUDP;
         private string name;
         private int portTCP;
-        private Form1 form;
+        private SettingsForm form;
         private object portTCPlocker = new object();
+        Boolean finalClose = false;
         private ClientUDP()
         {
         }
-        public ClientUDP(string name, int portTCP, Form1 form)
+        public ClientUDP(string name, int portTCP, SettingsForm form)
         {
             this.name = name;
             this.portTCP = portTCP;
@@ -45,10 +46,10 @@ namespace Progetto_2._0
                     Buffer.BlockCopy(BitConverter.GetBytes(payloadSize),0, payload, 0, 4); //big/little endian               
                     Buffer.BlockCopy(BitConverter.GetBytes(PortTCP), 0, payload, 4, 4);
                     Buffer.BlockCopy(Encoding.UTF8.GetBytes(Name), 0, payload, 8, nameSize);
-              
+
                     //send messagge
                     udpClient.Send(payload, payloadSize, endPointUDP);
-
+                   
                     //sleep for 2 seconds
                     Thread.Sleep(2000);
                 }
@@ -57,18 +58,28 @@ namespace Progetto_2._0
                 udpClient.Close();
 
                 //say to form that you finished (finally)
-                form.BeginInvoke(form.CloseThreadDelegate, new object[] { Thread.CurrentThread });
-                
+                if (!finalClose) {
+                    form.BeginInvoke(form.CloseThreadDelegate, new object[] { Thread.CurrentThread });
+                }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
+                //ArgumentNullException
+                //ArgumentException
+                //ArgumentOutOfRangeException
+                //ObjectDisposedException
+                //InvalidOperationException
+                //SocketException
+
+
             }
         }
 
-        public void CloseThread()
+        public void CloseThread(Boolean finalClose)
         {
             closeClientUDP = true;
+            this.finalClose = finalClose;
         }
 
         public string Name {

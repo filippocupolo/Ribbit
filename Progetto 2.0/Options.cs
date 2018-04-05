@@ -6,20 +6,29 @@ using System.Threading.Tasks;
 
 namespace Progetto_2._0
 {
-    class Options
+    public class Options
     {
         private string destPath;
         private string name;
         private bool ricMode;
         private bool privateMode;
+        private Object locker = new Object();
 
         public Options()
         {
-            //get settings from file
-            if (Properties.Settings.Default.DestPath == "NULL")
+            try
             {
-                Properties.Settings.Default.DestPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                //get settings from file
+                if (Properties.Settings.Default.DestPath == "NULL")
+                {
+                    Properties.Settings.Default.DestPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                }
+            }catch(Exception ex)
+            {
+                //ArgumentException
+                //PlatformNotSupportedException
             }
+            
             this.name = Properties.Settings.Default.Name;
             this.destPath = Properties.Settings.Default.DestPath;
             this.privateMode = Properties.Settings.Default.PrivateMode;
@@ -30,13 +39,19 @@ namespace Progetto_2._0
         {
             get
             {
-                return this.destPath;
+                lock (locker) { 
+                    return this.destPath;
+                }
             }
 
             set
             {
-                Properties.Settings.Default.DestPath = value;
-                this.destPath = value;
+                lock (locker)
+                {
+                    Properties.Settings.Default.DestPath = value;
+                    Properties.Settings.Default.Save();
+                    this.destPath = value;
+                }
             }
         }
 
@@ -44,13 +59,21 @@ namespace Progetto_2._0
         {
             get
             {
-                return this.name;
+                lock (locker)
+                {
+                    return this.name;
+                }
             }
 
             set
             {
-                Properties.Settings.Default.Name = value;
-                this.name = value;
+                lock (locker)
+                {
+                    Properties.Settings.Default.Name = value;
+                    Properties.Settings.Default.Save();
+
+                    this.name = value;
+                }
             }
         }
 
@@ -58,27 +81,41 @@ namespace Progetto_2._0
         {
             get
             {
-                return this.ricMode;
+                lock (locker)
+                {
+                    return this.ricMode;
+                }
             }
 
             set
             {
-                Properties.Settings.Default.RicMode = value;
-                this.ricMode = value;
-            }
+                    lock (locker)
+                    {
+                        Properties.Settings.Default.RicMode = value;
+                        Properties.Settings.Default.Save();
+                        this.ricMode = value;
+                    }
+                }
         }
 
         public bool PrivateMode
         {
             get
             {
-                return this.privateMode;
+                lock (locker)
+                {
+                    return this.privateMode;
+                }
             }
 
             set
             {
-                Properties.Settings.Default.PrivateMode = value;
-                this.privateMode = value;
+                    lock (locker)
+                    {
+                        Properties.Settings.Default.PrivateMode = value;
+                        Properties.Settings.Default.Save();
+                        this.privateMode = value;
+                    }
             }
         }
     }
