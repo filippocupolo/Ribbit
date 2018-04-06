@@ -41,30 +41,30 @@ namespace Progetto_2._0
                 Thread listManager = new Thread(this.ListManager);
                 listManager.Start();
 
-                //receive datagram
-                Task<UdpReceiveResult> task = udpServer.ReceiveAsync();
-
-                //receive data
-                while (closeServerUDP == false)
+                //wait for data or for closeServerUDP
+                while (true)
                 {
-                    //wait to receive new byte or closeServerUDP
-                    if (task.Wait(10000)) {
-                        
+                    while (udpServer.Available==0 && !closeServerUDP)
+                    {
+                        //wait for 0,1 seconds
+                        Thread.Sleep(100);
+                    }
+                    if (!closeServerUDP && udpServer.Available > 0)
+                    {
                         //Datagram received and put it into temp list
-                        byte[] data = task.Result.Buffer;
-                        IPEndPoint RemoteIpEndPoint = task.Result.RemoteEndPoint;
-                        
+                        IPEndPoint RemoteIpEndPoint = new IPEndPoint(0, 0);
+                        byte[] data = udpServer.Receive(ref RemoteIpEndPoint);
                         queue.Enqueue(new Tuple<byte[], IPEndPoint>(data, RemoteIpEndPoint));
                         newData.Set();
+                    
                     }
-
-                    //if task is completed create another
-                    if (task.IsCompleted)
+                    else if(closeServerUDP)
                     {
-                        task = udpServer.ReceiveAsync();
+                        //if closeServerUDP is true exit
+                        break;
                     }
                 }
-
+                
                 //leave multicast group and close udpclient (finally)
                 udpServer.DropMulticastGroup(Utilities.multicastEndPoint.Address);
                 udpServer.Close();

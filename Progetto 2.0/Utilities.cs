@@ -98,6 +98,7 @@ namespace Progetto_2._0
             catch (Exception ex) {
                 //ArgumentOutOfRangeException
                 //NetworkInformationException
+                return false;
             }
         }
     }

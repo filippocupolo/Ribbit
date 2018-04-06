@@ -41,16 +41,30 @@ namespace Progetto_2._0
                 
                 //create a list of Threads
                 List<Thread> threadList = new List<Thread>();
-                
-                //wait for connections
-                Task<TcpClient> task = serverTCP.AcceptTcpClientAsync();
-                
-                while (closeServerTCP == false)
-                {   
-                    if (task.Wait(10000)) {
 
+                //wait for connection or for closeServerTCP
+                while (true)
+                {
+                    while (!serverTCP.Pending() && !closeServerTCP) {
+                        
+                        //check if there are finished thread and remove them
+                        for (int i = 0; i < threadList.Count; i++)
+                        {
+                            if (threadList[i].Join(0))
+                            {
+                                threadList.RemoveAt(i);
+                                i--;
+                            }
+                        }
+
+                        //wait for 0,1 seconds
+                        Thread.Sleep(100);
+                    }
+
+                    if (!closeServerTCP && serverTCP.Pending())
+                    {
                         //received connection request
-                        TcpClient connectedSocket = task.Result;
+                        TcpClient connectedSocket = serverTCP.AcceptTcpClient();
 
                         //create thread to receive file
                         Receiver r = new Receiver(connectedSocket, AutomaticAnswer, PathDest, settingsForm);
@@ -58,37 +72,22 @@ namespace Progetto_2._0
                         t.Start();
                         threadList.Add(t);
                     }
-
-                    //check if there are finished thread and remove them
-                    for (int i = 0; i < threadList.Count; i++)
+                    else if (closeServerTCP)
                     {
-                        if (threadList[i].Join(0))
-                        {
-                            threadList.RemoveAt(i);
-                            i--;
-                        }
-                    }
-
-                    //if task is completed create another
-                    if (task.IsCompleted)
-                    {
-                        task = serverTCP.AcceptTcpClientAsync();
+                        //if closeServerTCP is true exit
+                        break;
                     }
                 }
-
+                
                 //stop listening for new client (finally)
                 serverTCP.Stop();
                 //wait all threads
                 threadList.ForEach(x => { x.Join(); });
-
                 
-                
-
                 //say to form that you finished (finally)
                 if (!finalClose) {
                     settingsForm.BeginInvoke(settingsForm.CloseThreadDelegate, new object[] { Thread.CurrentThread });
                 }
-                
                 
             }
             catch(Exception e)
