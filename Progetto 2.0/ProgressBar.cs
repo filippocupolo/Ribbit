@@ -48,13 +48,7 @@ namespace Progetto_2._0
 
         private void Setpercentage(int i)
         {
-            try
-            {
-                this.progressBar1.Value = i;
-            }
-            catch (Exception ex) {
-                //ArgumentException
-            }
+            this.progressBar1.Value = i;   
         }
 
         private void SetTime(string s)
@@ -92,44 +86,24 @@ namespace Progetto_2._0
 
         void timer_Tick(object sender, EventArgs e)
         {
-            try
-            {
-                this.Close();
-
-            }
-            catch(Exception ex) {
-                //InvalidOperationException
-                //ObjectDisposedException
-            }
+            this.Close();
             
         }
 
         private void Form2_Shown(object sender, EventArgs e)
         {
-            try
+            lock (locker)
             {
-                lock (locker)
-                {
-                    isCreated.setTrue();
-                    Monitor.PulseAll(locker);
-
-                }
-            }catch(Exception ex)
-            {
-                //ArgumentNullException
-                //SynchronizationLockException
+                isCreated.setTrue();
+                Monitor.PulseAll(locker);
 
             }
-
         }
 
         void EditTitleBar()
         {
-            try
-            {
-                this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             
-
             TitleBar.Name = "titleBar";
             TitleBar.Dock = DockStyle.Top;
 
@@ -162,12 +136,7 @@ namespace Progetto_2._0
             TitleBar.Controls.Add(IconButton);
             TitleBar.Controls.Add(ProgramName);
             this.Controls.Add(TitleBar);
-            }
-            catch (Exception ex) {
-                //Exception
-                //ArgumentException
-                //InvalidEnumArgumentException
-            }
+            
         }
 
         private void IconButton_MouseHover(object sender, EventArgs e)
@@ -176,22 +145,14 @@ namespace Progetto_2._0
         }
         private void lblMaximize_Click(object sender, EventArgs e)
         {
-            try
+            if (this.WindowState == FormWindowState.Normal)
             {
-                if (this.WindowState == FormWindowState.Normal)
-                {
-                    this.WindowState = FormWindowState.Minimized;
-                }
-                else if (this.WindowState == FormWindowState.Minimized)
-                {
-                    this.WindowState = FormWindowState.Maximized;
-                }
-            }catch(Exception ex)
-            {
-
-                //InvalidEnumArgument
+                this.WindowState = FormWindowState.Minimized;
             }
-
+            else if (this.WindowState == FormWindowState.Minimized)
+            {
+                this.WindowState = FormWindowState.Maximized;
+            }
         }
 
         private void TitleBar_MouseMove(object sender, MouseEventArgs e)

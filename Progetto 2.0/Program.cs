@@ -19,18 +19,14 @@ namespace Progetto_2._0
         /// </summary>
         private static SettingsForm settingsForm;
         private static Mutex mutex = new Mutex(true, "Filippo&Marco.Ribbit");
-
+        
         [STAThread]
         static void Main(String[] args)
         {
-            
-
-           
-            try
+            //if the mutex is owned enter and launch the program
+            if (mutex.WaitOne(TimeSpan.Zero, true))
             {
-             
-
-                if (mutex.WaitOne(TimeSpan.Zero, true))
+                try
                 {
                     Application.SetCompatibleTextRenderingDefault(false);
                     Application.EnableVisualStyles();
@@ -56,50 +52,63 @@ namespace Progetto_2._0
                         settingsForm = new SettingsForm(null);
                     }
                     Application.Run(settingsForm);
-                    
+                }
+                catch (Exception e)
+                { Console.WriteLine(e.ToString()); }
+                finally
+                {
+                    //release mutex
                     mutex.ReleaseMutex();
                 }
-                else
+            }
+            else
+            {
+                if (args.Length > 0)
                 {
-                    if (args.Length > 0)
+                    Boolean repeat = true;
+                    int i = 0;
+                    while (repeat)
                     {
                         NamedPipeClientStream pipe = new NamedPipeClientStream(".", "RibbitPipe", PipeAccessRights.FullControl,
                             PipeOptions.WriteThrough, System.Security.Principal.TokenImpersonationLevel.None, System.IO.HandleInheritability.None);
-                        pipe.Connect(3000);
-                        byte[] bytes = Encoding.UTF8.GetBytes(args[0]);
-                        pipe.Write(bytes, 0, bytes.Length);
-                        pipe.Flush();
-                        pipe.Close();
-                    }
-                    else
-                    {
-                        //program already open
-                        MessageBox.Show("Program is already running!!");
-                    }
+                        repeat = false;
+                        i++;
+                        try
+                        {
 
+                            pipe.Connect(3000);
+                            byte[] bytes = Encoding.UTF8.GetBytes(args[0]);
+                            pipe.Write(bytes, 0, bytes.Length);
+
+                        }
+                        catch (System.IO.IOException e)
+                        {
+                            if (i < 2) { repeat = true; }
+                            Console.WriteLine(e.ToString());
+                        }
+                        catch (TimeoutException e)
+                        {
+                            if (i < 2) { repeat = true; }
+                            Console.WriteLine(e.ToString());
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.ToString());
+                        }
+
+                        finally
+                        {
+                            pipe.Flush();
+                            pipe.Close();
+                        }
+                    }
                 }
+                else
+                {
+                    //program already open
+                    MessageBox.Show("Program is already running!!");
+                }               
             }
-            catch(Exception e)
-            {
-                MessageBox.Show(e.ToString());
-                //ObjectDisposedException
-                //InvalidOperationException
-                //NotSupportedException
-                //System.IO.Exception
-                //ArgumentOutOfRangeExpeption
-                //ArgumentNullException
-                //ArgumentException
-                //EncoderFallBackException
-                //TimeOutException
-                //OverflowException
-                //ApplicationException
-                //AbandonedMutexException
-                //UnhautorizedAccessException
-                //WaitHAndleCannotBeOpenedException
-            }
-          
-        }
-    
-    }
-   
+        }   
+    }  
 }

@@ -85,6 +85,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Receiver.cs" />
     <Compile Include="Registry.cs" />
+    <Compile Include="RibbitException.cs" />
     <Compile Include="ServerTCP.cs" />
     <Compile Include="ServerUDP.cs" />
     <Compile Include="SettingsForm.cs">
