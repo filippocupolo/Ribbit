@@ -16,19 +16,12 @@ namespace Progetto_2._0
 
         public Options()
         {
-            try
+            //get settings from file
+            if (Properties.Settings.Default.DestPath == "NULL")
             {
-                //get settings from file
-                if (Properties.Settings.Default.DestPath == "NULL")
-                {
-                    Properties.Settings.Default.DestPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                }
-            }catch(Exception ex)
-            {
-                //ArgumentException
-                //PlatformNotSupportedException
+                Properties.Settings.Default.DestPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             }
-            
+
             this.name = Properties.Settings.Default.Name;
             this.destPath = Properties.Settings.Default.DestPath;
             this.privateMode = Properties.Settings.Default.PrivateMode;

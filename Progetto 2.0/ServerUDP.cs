@@ -56,7 +56,6 @@ namespace Progetto_2._0
                         byte[] data = udpServer.Receive(ref RemoteIpEndPoint);
                         queue.Enqueue(new Tuple<byte[], IPEndPoint>(data, RemoteIpEndPoint));
                         newData.Set();
-                    
                     }
                     else if(closeServerUDP)
                     {
@@ -88,115 +87,98 @@ namespace Progetto_2._0
         }
         public void CloseThread()
         {
-            try
-            {
-                closeServerUDP = true;
-                closeThread.Set();
-            }
-            catch(Exception ex) {
-                //ObjectDsiposedException
-            }
-          
+            closeServerUDP = true;
+            closeThread.Set();
         }
         private void ScanUserList(User u = null)
         {
-            try
+            bool exist = false;
+            for (int i = 0; i < userList.Count; i++)
             {
-                bool exist = false;
-                for (int i = 0; i < userList.Count; i++)
+                if (u != null)
                 {
-                    if (u != null)
+                    //check if user already exist and reset time
+                    if (userList[i].IP.Address.Equals(u.IP.Address))
                     {
-                        //check if user already exist and reset time
-                        if (userList[i].IP.Address.Equals(u.IP.Address))
+                        userList[i].SetTime();
+
+                        //if the name is changed change it
+                        if (!userList[i].Name.Equals(u.Name))
                         {
-                            userList[i].SetTime();
-
-                            //if the name is changed change it
-                            if (!userList[i].Name.Equals(u.Name))
+                            userList[i].Name = u.Name;
+                            if (sharingFormList.Any())
                             {
-                                userList[i].Name = u.Name;
-                                if (sharingFormList.Any())
+                                foreach (KeyValuePair<SharingForm, String> sf in sharingFormList)
                                 {
-                                    foreach (KeyValuePair<SharingForm, String> sf in sharingFormList)
-                                    {
-                                        sf.Key.BeginInvoke(sf.Key.changeItemDelegate, new object[] { u });
-                                    }
+                                    sf.Key.BeginInvoke(sf.Key.changeItemDelegate, new object[] { u });
                                 }
-                            }
-
-                            //if the port is changed change it
-                            if (!userList[i].IP.Port.Equals(u.IP.Port))
-                            {
-                                userList[i].IP.Port = u.IP.Port;
-                                if (sharingFormList.Any())
-                                {
-                                    foreach (KeyValuePair<SharingForm, String> sf in sharingFormList)
-                                    {
-                                        sf.Key.BeginInvoke(sf.Key.changeItemDelegate, new object[] { u });
-                                    }
-                                }
-                            }
-
-                            exist = true;
-                        }
-                    }
-
-                    //delete element exipired
-                    TimeSpan span = DateTime.Now.Subtract(userList[i].GetTime());
-                    if (span.TotalSeconds > 5)
-                    {
-                        if (sharingFormList.Any())
-                        {
-                            foreach (KeyValuePair<SharingForm, String> sf in sharingFormList)
-                            {
-                                sf.Key.BeginInvoke(sf.Key.removeItemDelegate, new object[] { userList[i] });
                             }
                         }
 
-                        userList.RemoveAt(i);
+                        //if the port is changed change it
+                        if (!userList[i].IP.Port.Equals(u.IP.Port))
+                        {
+                            userList[i].IP.Port = u.IP.Port;
+                            if (sharingFormList.Any())
+                            {
+                                foreach (KeyValuePair<SharingForm, String> sf in sharingFormList)
+                                {
+                                    sf.Key.BeginInvoke(sf.Key.changeItemDelegate, new object[] { u });
+                                }
+                            }
+                        }
+
+                        exist = true;
                     }
                 }
 
-                //add element if it is new
-                if (exist == false && u != null)
+                //delete element exipired
+                TimeSpan span = DateTime.Now.Subtract(userList[i].GetTime());
+                if (span.TotalSeconds > 5)
                 {
-                    userList.Add(u);
                     if (sharingFormList.Any())
                     {
                         foreach (KeyValuePair<SharingForm, String> sf in sharingFormList)
                         {
-                            sf.Key.BeginInvoke(sf.Key.addItemDelegate, new object[] { u });
+                            sf.Key.BeginInvoke(sf.Key.removeItemDelegate, new object[] { userList[i] });
                         }
                     }
+
+                    userList.RemoveAt(i);
                 }
+            }
 
-            }catch(Exception ex)
+            //add element if it is new
+            if (exist == false && u != null)
             {
-                //InvalidOperationException
-                //ArgumentNullException
-                //ArgumentOutOfRangeException
-
-               
+                userList.Add(u);
+                if (sharingFormList.Any())
+                {
+                    foreach (KeyValuePair<SharingForm, String> sf in sharingFormList)
+                    {
+                        sf.Key.BeginInvoke(sf.Key.addItemDelegate, new object[] { u });
+                    }
+                }
             }
         }
 
         private void GetElement() {
-            try
-            {
-                while (queue.Any())
-                {
-                    //get first element
-                    Tuple<byte[], IPEndPoint> tuple;
-                    if (!queue.TryDequeue(out tuple)) break;
 
-                    //get data from first element
-                    byte[] data = tuple.Item1;
-                    IPAddress address = tuple.Item2.Address;
-                    //Console.WriteLine("ServerUDP.GetElement: received;" + address);
+            while (queue.Any())
+            {
+                //get first element
+                Tuple<byte[], IPEndPoint> tuple;
+                if (!queue.TryDequeue(out tuple)) break;
+
+                //get data from first element
+                byte[] data = tuple.Item1;
+                IPAddress address = tuple.Item2.Address;
+                //Console.WriteLine("ServerUDP.GetElement: received;" + address);
+
+                try
+                {
 
                     //check if the adress is mine
-
                     if (!address.Equals(Dns.GetHostAddresses(Dns.GetHostName()).Where(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToArray()[0]))
                     {
                         //get payloadsize and check if corrispond to receivedbyte
@@ -214,66 +196,44 @@ namespace Progetto_2._0
                             ScanUserList(u);
                         }
                     }
-
                 }
-            }catch(Exception ex)
-            {
-                //ArgumentException
-                //ArgumentNullException
-                //ArgumentOutOfRangeException
-                //DecoderFallbackException
-                //OverflowException
-                //SocketException
+                catch (SocketException ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
 
             }
         }
         private void ListManager() {
-            try 
+
+            WaitHandle[] waithandles = new WaitHandle[] { this.closeThread, this.newData };
+            while (closeServerUDP == false)
             {
-                WaitHandle[] waithandles = new WaitHandle[] { this.closeThread, this.newData };
-                while (closeServerUDP == false) {
 
-                    if (!userList.Any())
+                if (!userList.Any())
+                {
+                    //wait for multiple object (newData and closeThread)
+                    WaitHandle.WaitAny(waithandles);
+
+                    //get the new element from temp list and put in userlist
+                    GetElement();
+                }
+                else
+                {
+                    //wait for new data or timeout (need to scan the list every 100 ms)
+                    if (!newData.WaitOne(100))
                     {
-                        //wait for multiple object (newData and closeThread)
-                        WaitHandle.WaitAny(waithandles);
-
-                        //get the new element from temp list and put in userlist
-                        GetElement();
+                        //scan the userlist
+                        ScanUserList();
                     }
                     else
                     {
-                        //wait for new data or timeout (need to scan the list every 100 ms)
-                        if (!newData.WaitOne(100))
-                        {
-                            //scan the userlist
-                            ScanUserList();
-                        }
-                        else
-                        {
-                            //get the new element from temp list and put in userlist
-                            GetElement();
-                        }
+                        //get the new element from temp list and put in userlist
+                        GetElement();
                     }
-
                 }
-            }
-            catch (Exception e)
-            {
-                
-                Console.WriteLine(e.ToString());
-                //ObjectDisposedException
-                //ArgumentOutOfRangeException
-                //AbandonedMutexException
-                //InvalidOperationException
-                //NotSupportedException
-                //ArgumentNullException
-                //ApplicationException
-                //ArgumentException
             }
         }
     }
 }
 
-//questions: big/little endian, ipv6, mutex, try catch, receive data con un altro thread
-//how to close the thread at the end of the program,

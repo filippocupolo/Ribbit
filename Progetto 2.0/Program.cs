@@ -95,7 +95,6 @@ namespace Progetto_2._0
                         {
                             Console.WriteLine(e.ToString());
                         }
-
                         finally
                         {
                             pipe.Flush();

@@ -29,50 +29,74 @@ namespace Progetto_2._0
             this.closeClientUDP = false;
         }
         public void Execute() {
-            try
-            { 
-                //initialize UdpClient
-                udpClient = new UdpClient();
 
-                //set end point to multicast 239.168.100.2:64537
-                IPEndPoint endPointUDP = new IPEndPoint(Utilities.multicastEndPoint.Address, Utilities.multicastEndPoint.Port);
-
-                while (closeClientUDP == false) //must use mutex 
-                {
-                    //create payload: 4 byte lenght payload 4 byte port n byte name
-                    int nameSize = Name.Length;
-                    int payloadSize = nameSize + 8;
-                    byte[] payload = new byte[payloadSize];
-                    Buffer.BlockCopy(BitConverter.GetBytes(payloadSize),0, payload, 0, 4); //big/little endian               
-                    Buffer.BlockCopy(BitConverter.GetBytes(PortTCP), 0, payload, 4, 4);
-                    Buffer.BlockCopy(Encoding.UTF8.GetBytes(Name), 0, payload, 8, nameSize);
-
-                    //send messagge
-                    udpClient.Send(payload, payloadSize, endPointUDP);
-                   
-                    //sleep for 2 seconds
-                    Thread.Sleep(2000);
-                }
-
-                //close udpclient (finally)
-                udpClient.Close();
-
-                //say to form that you finished (finally)
-                if (!finalClose) {
-                    form.BeginInvoke(form.CloseThreadDelegate, new object[] { Thread.CurrentThread });
-                }
-            }
-            catch (Exception e)
+            int c = 0;
+            Boolean repeat = true;
+            while (repeat)
             {
-                Console.WriteLine(e.ToString());
-                //ArgumentNullException
-                //ArgumentException
-                //ArgumentOutOfRangeException
-                //ObjectDisposedException
-                //InvalidOperationException
-                //SocketException
+                repeat = false;
+                c++;
 
+                try
+                {
+                    //initialize UdpClient
+                    udpClient = new UdpClient();
 
+                    //set end point to multicast 239.168.100.2:64537
+                    IPEndPoint endPointUDP = new IPEndPoint(Utilities.multicastEndPoint.Address, Utilities.multicastEndPoint.Port);
+
+                    while (closeClientUDP == false) //must use mutex 
+                    {
+                        //create payload: 4 byte lenght payload 4 byte port n byte name
+                        int nameSize = Name.Length;
+                        int payloadSize = nameSize + 8;
+                        byte[] payload = new byte[payloadSize];
+                        Buffer.BlockCopy(BitConverter.GetBytes(payloadSize), 0, payload, 0, 4); //big/little endian               
+                        Buffer.BlockCopy(BitConverter.GetBytes(PortTCP), 0, payload, 4, 4);
+                        Buffer.BlockCopy(Encoding.UTF8.GetBytes(Name), 0, payload, 8, nameSize);
+
+                        //send messagge
+                        udpClient.Send(payload, payloadSize, endPointUDP);
+
+                        //sleep for 2 seconds
+                        Thread.Sleep(2000);
+                    }
+
+                    //close udpclient
+                    udpClient.Close();
+
+                    //say to form that you finished 
+                    if (!finalClose)
+                    {
+                        form.BeginInvoke(form.CloseThreadDelegate, new object[] { Thread.CurrentThread });
+                    }
+                }
+                catch (SocketException e)
+                {
+                    Console.WriteLine(e.ToString());
+                    if (c < 2)
+                    {
+                        if (udpClient != null && udpClient.Client != null) {
+                            udpClient.Close();
+                        }
+                        repeat = true;
+                    }
+                    else {
+
+                        form.BeginInvoke(form.DownloadStateDelegate, new object[] { "Impossible to show to other that you are online", true });
+                        
+                        //say to form that you finished
+                        if (!finalClose)
+                        {
+                            form.BeginInvoke(form.CloseThreadDelegate, new object[] { Thread.CurrentThread });
+                        }
+
+                        if (udpClient != null && udpClient.Client != null)
+                        {
+                            udpClient.Close();
+                        }
+                    }
+                }
             }
         }
 

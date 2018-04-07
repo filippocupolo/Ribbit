@@ -38,12 +38,8 @@ namespace Progetto_2._0
         }
 
         private void EditTitleBar() {
-            try
-            {
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-
-           
             
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             
             TitleBar.Name = "titleBar";
             TitleBar.Dock = DockStyle.Top; 
@@ -53,27 +49,17 @@ namespace Progetto_2._0
             TitleBar.MouseMove += new MouseEventHandler(TitleBar_MouseMove);
             TitleBar.MouseUp += new MouseEventHandler(this.TitleBar_MouseUp);
             TitleBar.MouseDown += new MouseEventHandler(this.TitleBar_MouseDown);
-
-
             
             CloseButton.Name = "closeButton";
             CloseButton.Text = "X";
             CloseButton.ForeColor = Color.WhiteSmoke;
-            
             CloseButton.Dock = DockStyle.Right;
             CloseButton.FlatStyle = FlatStyle.Flat;
-         
-
             CloseButton.Size = new Size(25,25);
             CloseButton.BackColor = Color.IndianRed;
             CloseButton.Click += new System.EventHandler(this.CloseButton_Click);
             CloseButton.MouseHover += new System.EventHandler(this.CloseButton_MouseHover);
-
             
-            
-
-           
-
             ProgramName.Name = "programName";
             ProgramName.Text = "Ribbit";
             ProgramName.ForeColor = Color.WhiteSmoke;
@@ -83,12 +69,7 @@ namespace Progetto_2._0
             TitleBar.Controls.Add(CloseButton);
             TitleBar.Controls.Add(ProgramName);
             this.Controls.Add(TitleBar);
-            }
-            catch(Exception ex) {
-                //Exception
-                //ArgumentException
-                //InvalidEnumArgumentException
-            }
+            
         }
 
         private void CloseButton_MouseHover(object sender,EventArgs e) {
@@ -96,15 +77,7 @@ namespace Progetto_2._0
         }
 
         private void CloseButton_Click(object sender,EventArgs e) {
-            try
-            {
-                this.Close();
-            }
-            catch (Exception ex) {
-                //InvalidOperationException
-                //ObjectDisposedException
-            }
-            
+            this.Close();
         }
         
         private void TitleBar_MouseMove(object sender, MouseEventArgs e)
@@ -129,20 +102,14 @@ namespace Progetto_2._0
 
         private void ButtonOk_Click(object sender, EventArgs e)
         {
-            try
+            if (setName.Text == "DefaultName" || setName.Text == "")
             {
-                if (setName.Text == "DefaultName" || setName.Text == "")
-                {
-                    MessageBox.Show("Invalid Name!");
-                }
-                else
-                {
-                    options.Name=setName.Text;
-                    this.Close();
-                }
-            }catch(Exception ex) {
-                //InvalidOperationException
-                //ObjectDisposedException
+                MessageBox.Show("Invalid Name!");
+            }
+            else
+            {
+                options.Name = setName.Text;
+                this.Close();
             }
         }
         

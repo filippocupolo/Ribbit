@@ -69,8 +69,6 @@ namespace Progetto_2._0
         {
             try
             {
-                bool isAvailable = true;
-
                 IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
                 IPEndPoint[] tcpConnInfoArray = ipGlobalProperties.GetActiveTcpListeners();
                 IPEndPoint[] udpConnInfoArray = ipGlobalProperties.GetActiveUdpListeners();
@@ -79,8 +77,7 @@ namespace Progetto_2._0
                 {
                     if (endpoint.Port == port)
                     {
-                        isAvailable = false;
-                        break;
+                        return false;
                     }
                 }
 
@@ -88,16 +85,14 @@ namespace Progetto_2._0
                 {
                     if (endpoint.Port == port)
                     {
-                        isAvailable = false;
-                        break;
+                        return false;
                     }
                 }
 
-                return isAvailable;
+                return true;
             }
             catch (Exception ex) {
-                //ArgumentOutOfRangeException
-                //NetworkInformationException
+                Console.WriteLine(ex.ToString());
                 return false;
             }
         }
