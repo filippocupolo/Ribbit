@@ -10,6 +10,11 @@ namespace Progetto_2._0
 {
     class Utilities
     {
+        //labols
+        static public String ServerUDP = "S_UDP";
+        static public String ServerTCP = "S_TCP";
+        static public String CientUDP = "C_UDP";
+        static public String CientTCP = "C_TCP";
 
         //time to erase a element from the list
         static public int time_to_delete = 5;

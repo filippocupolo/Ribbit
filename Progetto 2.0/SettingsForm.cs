@@ -38,6 +38,7 @@ namespace Progetto_2._0
         private List<User> userList;
         private Dictionary<Thread,SharingForm> threadFormList;
         private ConcurrentDictionary<SharingForm,String> sharingFormList;
+        private Boolean realClose = false;
 
         private ClientUDP clientUDP;
         private Thread UDPClientThread;
@@ -51,7 +52,7 @@ namespace Progetto_2._0
         private NamedPipeServerStream pipe;
 
         //set delegates
-        public delegate void CloseThread(Thread thread);
+        public delegate void CloseThread(Thread thread, String labol);
         public delegate void DownloadState(String message, Boolean error);
 
         public CloseThread CloseThreadDelegate;
@@ -126,7 +127,7 @@ namespace Progetto_2._0
             pipe.BeginWaitForConnection(PipeCallBack, pipe);
 
             //Initialize serverUDP
-            serverUDP = new ServerUDP(userList, sharingFormList);
+            serverUDP = new ServerUDP(userList, sharingFormList, this);
             UDPServerThread = new Thread(serverUDP.Execute);
             UDPServerThread.Start();
 
@@ -416,7 +417,7 @@ namespace Progetto_2._0
             }
         }
         
-        private void CloseThreadMethod(Thread thread)
+        private void CloseThreadMethod(Thread thread, String labol)
         {
             if (thread.IsAlive)
             {
@@ -427,6 +428,41 @@ namespace Progetto_2._0
                 if (threadFormList.ContainsKey(thread))
                 {
                     threadFormList.Remove(thread);
+                }
+            }
+
+            if (!realClose) { 
+                if (labol.Equals(Utilities.ServerUDP)) {
+
+                    //Initialize serverUDP
+                    serverUDP = new ServerUDP(userList, sharingFormList, this);
+                    UDPServerThread = new Thread(serverUDP.Execute);
+                    UDPServerThread.Start();
+                    
+                }
+                if (labol.Equals(Utilities.ServerTCP) && options.PrivateMode==false)
+                {
+
+                    //get a free port
+                    if (!Utilities.FindPort(ref portTCP))
+                    {
+                        //there are no free ports so close the program
+                        RealClose();
+                    }
+
+                    //Initialize serverTCP
+                    serverTCP = new ServerTCP(portTCP, options.DestPath, options.RicMode, this);
+                    TCPServerThread = new Thread(serverTCP.Execute);
+                    TCPServerThread.Start();
+                    
+                }
+                if (labol.Equals(Utilities.CientUDP) && options.PrivateMode == false)
+                {
+
+                    //Initialize clientUDP
+                    clientUDP = new ClientUDP(options.Name, portTCP, this);
+                    UDPClientThread = new Thread(clientUDP.Execute);
+                    UDPClientThread.Start();
                 }
             }
         }
@@ -476,6 +512,7 @@ namespace Progetto_2._0
 
             //hide form
             Hide();
+            realClose = true;
 
             List<Thread> threadList = new List<Thread>();
 

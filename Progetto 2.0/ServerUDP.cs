@@ -14,6 +14,7 @@ namespace Progetto_2._0
     class ServerUDP
     {
         private UdpClient udpServer;
+        private SettingsForm settingsForm;
         private volatile bool closeServerUDP;
         private List<User> userList;
         private ConcurrentQueue<Tuple<byte[], IPEndPoint>> queue;
@@ -21,8 +22,9 @@ namespace Progetto_2._0
         private ManualResetEvent closeThread;
         private ConcurrentDictionary<SharingForm,String> sharingFormList;
 
-        public ServerUDP(List<User> userList, ConcurrentDictionary<SharingForm, String> sharingFormList) {
+        public ServerUDP(List<User> userList, ConcurrentDictionary<SharingForm, String> sharingFormList, SettingsForm settingsForm) {
 
+            this.settingsForm = settingsForm;
             this.closeServerUDP = false;
             this.sharingFormList = sharingFormList;
             this.userList = userList;
@@ -31,6 +33,9 @@ namespace Progetto_2._0
             this.closeThread = new ManualResetEvent(false);
         }
         public void Execute() {
+
+            Thread listManager = null;
+
             try
             {
                 //join muticast and listen at 64537 port
@@ -38,7 +43,7 @@ namespace Progetto_2._0
                 udpServer.JoinMulticastGroup(Utilities.multicastEndPoint.Address);
 
                 //create thread to manage userlist
-                Thread listManager = new Thread(this.ListManager);
+                listManager = new Thread(this.ListManager);
                 listManager.Start();
 
                 //wait for data or for closeServerUDP
@@ -73,16 +78,20 @@ namespace Progetto_2._0
             }
             catch (Exception e)
             {
-                //ThreadStateException
-                //ThreadInterruptedException
-                //SocketException
-                //ObjectDisposedException
-                //ArgumentException
-                //ArgumentNullException
-                //AggregateException
-                //ArgumentOutOfRangeException
-                //OutOfMemoryException
-                
+                Console.WriteLine(e.ToString());
+
+                //close socket
+                if (udpServer != null && udpServer.Client != null)
+                {
+                    udpServer.Close();
+                }
+
+                //close listManager
+                CloseThread();
+                if (listManager != null) { listManager.Join(); }
+
+                //say to settingsform that you closed
+                settingsForm.BeginInvoke(settingsForm.CloseThreadDelegate, new object[] { Thread.CurrentThread, Utilities.ServerUDP });
             }
         }
         public void CloseThread()

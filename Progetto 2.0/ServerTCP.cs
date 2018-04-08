@@ -86,7 +86,7 @@ namespace Progetto_2._0
                 
                 //say to form that you finished (finally)
                 if (!finalClose) {
-                    settingsForm.BeginInvoke(settingsForm.CloseThreadDelegate, new object[] { Thread.CurrentThread });
+                    settingsForm.BeginInvoke(settingsForm.CloseThreadDelegate, new object[] { Thread.CurrentThread, Utilities.ServerTCP });
                 }
                 
             }
@@ -102,7 +102,6 @@ namespace Progetto_2._0
                 //AggregateException
                 //ObjectDisposedException
                
-                
             }
         }
 

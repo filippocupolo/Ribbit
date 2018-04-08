@@ -68,7 +68,7 @@ namespace Progetto_2._0
                     //say to form that you finished 
                     if (!finalClose)
                     {
-                        form.BeginInvoke(form.CloseThreadDelegate, new object[] { Thread.CurrentThread });
+                        form.BeginInvoke(form.CloseThreadDelegate, new object[] { Thread.CurrentThread, Utilities.CientUDP });
                     }
                 }
                 catch (SocketException e)
@@ -82,13 +82,11 @@ namespace Progetto_2._0
                         repeat = true;
                     }
                     else {
-
-                        form.BeginInvoke(form.DownloadStateDelegate, new object[] { "Impossible to show to other that you are online", true });
                         
                         //say to form that you finished
                         if (!finalClose)
                         {
-                            form.BeginInvoke(form.CloseThreadDelegate, new object[] { Thread.CurrentThread });
+                            form.BeginInvoke(form.CloseThreadDelegate, new object[] { Thread.CurrentThread, Utilities.CientUDP });
                         }
 
                         if (udpClient != null && udpClient.Client != null)
