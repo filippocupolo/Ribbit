@@ -33,20 +33,23 @@ namespace Progetto_2._0
         }
         public void Execute() {
 
+            List<Thread> threadList = null;
+
             try
             {
                 //listen local IP:portTCP
                 serverTCP = new TcpListener(Dns.GetHostAddresses(Dns.GetHostName()).Where(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToArray()[0], PortTCP);
                 serverTCP.Start();
-                
+
                 //create a list of Threads
-                List<Thread> threadList = new List<Thread>();
+                threadList = new List<Thread>();
 
                 //wait for connection or for closeServerTCP
                 while (true)
                 {
-                    while (!serverTCP.Pending() && !closeServerTCP) {
-                        
+                    while (!serverTCP.Pending() && !closeServerTCP)
+                    {
+
                         //check if there are finished thread and remove them
                         for (int i = 0; i < threadList.Count; i++)
                         {
@@ -79,29 +82,31 @@ namespace Progetto_2._0
                     }
                 }
                 
-                //stop listening for new client (finally)
-                serverTCP.Stop();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+               
+            }
+            finally {
+
+                //stop listening for new client 
+                if (serverTCP != null && serverTCP.Server != null)
+                {
+                    serverTCP.Stop();
+                }
+
                 //wait all threads
-                threadList.ForEach(x => { x.Join(); });
-                
+                if (threadList != null)
+                {
+                    threadList.ForEach(x => { x.Join(); });
+                }
+
                 //say to form that you finished (finally)
-                if (!finalClose) {
+                if (!finalClose)
+                {
                     settingsForm.BeginInvoke(settingsForm.CloseThreadDelegate, new object[] { Thread.CurrentThread, Utilities.ServerTCP });
                 }
-                
-            }
-            catch(Exception e)
-            {
-                //InvalidOperationException
-                //ArgumentNullException
-                //ThreadStateException
-                //ThreadInterruptedException
-                //SocketException
-                //ArgumentOutOfRangeException
-                //OutOfMemoryException
-                //AggregateException
-                //ObjectDisposedException
-               
             }
         }
 

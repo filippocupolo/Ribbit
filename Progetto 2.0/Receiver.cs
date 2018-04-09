@@ -31,10 +31,13 @@ namespace Progetto_2._0
 
         private void ReceiveFile(NetworkStream stream, long fileSize, string fileName)
         {
+            string filepath = null;
+            ProgressBar progressBarForm = null;
+            FileStream file = null;
             try
             {
                 //set filepath
-                string filepath = string.Concat(pathDest, "\\");
+                filepath = string.Concat(pathDest, "\\");
                 filepath = string.Concat(filepath, fileName);
 
                 if (File.Exists(filepath))
@@ -67,7 +70,7 @@ namespace Progetto_2._0
                 }
 
                 //create file
-                FileStream file = File.Create(filepath);
+                file = File.Create(filepath);
 
                 //set array to receive
                 byte[] data = new byte[buffer];
@@ -88,7 +91,7 @@ namespace Progetto_2._0
                 Flag cancel = new Flag(false);
 
                 //create form
-                ProgressBar progressBarForm = new ProgressBar(isCreated, locker, cancel, "Receiving " + fileName);
+                progressBarForm = new ProgressBar(isCreated, locker, cancel, "Receiving " + fileName);
                 Task.Run(() => { progressBarForm.ShowDialog(); });
 
                 //wait until form is created
@@ -172,67 +175,56 @@ namespace Progetto_2._0
 
             }catch(Exception ex)
             {
-                //IOException
-                //ObjectDisposedException
-                //InvalidOperationException
-                //NotSupportedException
-                //ArgumentException
-                //ArgumentNullException
-                //ArgumentOutOfRangeException
-                //DirectoryNotFoundException
-                //PathTooLongException
-                //UnauthorizedAccessException
-                //SynchronizationLockException
-                //ThreadInterruptedException
-                //InvalidEnumArgumentException
+                //delete file and close connection
+                if (file != null) { 
+
+                    file.Flush();
+                    file.Close();
+                    File.Delete(filepath);
+                }
+                if (progressBarForm != null && progressBarForm.Created)
+                {
+                    progressBarForm.BeginInvoke(progressBarForm.closeFormDelegate);
+                }
+                progressBarForm.BeginInvoke(progressBarForm.closeFormDelegate);
+
+                throw ex;
             }
         }
 
         public bool Answer(NetworkStream stream, string fileName, string userName) {
-            try
+
+            //set answer
+            byte[] answer = new byte[1];
+            if (automaticAnswer)
             {
-                //set answer
-                byte[] answer = new byte[1];
-                if (automaticAnswer)
+                answer[0] = 1;
+            }
+            else
+            {
+                string file_folder = (isFolder) ? "the folder" : "the file";
+
+                //ask to user
+                if (MessageBox.Show("Receiving request", "Do you want to receive " + file_folder + fileName + " from " + userName + "?", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
                     answer[0] = 1;
                 }
                 else
                 {
-                    string file_folder = (isFolder) ? "la cartella" : "il file";
-
-                    //ask to user
-                    if (MessageBox.Show("Richiesta di ricezione", "Vuoi ricevere " + file_folder + fileName + " da " + userName, MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    {
-                        answer[0] = 1;
-                    }
-                    else
-                    {
-                        answer[0] = 0;
-                    }
+                    answer[0] = 0;
                 }
-
-                //send answer
-                stream.Write(answer, 0, 1);
-                if (answer[0] == 0) { return false; }
-                else { return true; }
-
             }
-            catch(Exception ex)
-            {
-                return false;
-                //ArgumentNullException
-                //ArgumentOutOfRangeException
-                //IOException
-                //ObjectDisposedException
-                //InvalidEnumArgumentException
-                //InvalidOperationException
 
-            }
-            
+            //send answer
+            stream.Write(answer, 0, 1);
+            if (answer[0] == 0) { return false; }
+            else { return true; }
+
         }
         public void Execute()
         {
+            string fileName = null;
+            string userName = null;
             try
             {
                 //create the stream
@@ -244,8 +236,10 @@ namespace Progetto_2._0
                 //non so se è giusto. Capire se read è bloccante
                 stream.ReadTimeout = 10000;
 
-                if (stream.Read(readData, 0, readData.Length)!= dimentionsLenght) {      
+                if (stream.Read(readData, 0, readData.Length)!= dimentionsLenght) {
                     //error must be 17 byte
+                    connectedSocket.Close();
+                    return;
                 }
 
                 //set isFolder byte, filesize, filenamesize and usernamesize
@@ -259,6 +253,8 @@ namespace Progetto_2._0
                 if (stream.Read(readData, 0, readData.Length) != filenameSize + usernameSize)
                 {
                     //error must be filenameSize + usenameSize byte
+                    connectedSocket.Close();
+                    return;
                 }
 
                 //get file name and user name
@@ -266,8 +262,8 @@ namespace Progetto_2._0
                 byte[] bufferUserName = new byte[usernameSize];
                 Buffer.BlockCopy(readData, 0, bufferFileName, 0, filenameSize);
                 Buffer.BlockCopy(readData, filenameSize, bufferUserName, 0, usernameSize);
-                string fileName = Encoding.UTF8.GetString(bufferFileName);
-                string userName = Encoding.UTF8.GetString(bufferUserName);
+                fileName = Encoding.UTF8.GetString(bufferFileName);
+                userName = Encoding.UTF8.GetString(bufferUserName);
 
                 //send answer
                 if (Answer(stream, fileName, userName))
@@ -276,19 +272,18 @@ namespace Progetto_2._0
                     ReceiveFile(stream, fileSize, fileName);
                 }
                 
-                //close socket (finally)
+                //close socket
                 connectedSocket.Close();
             }
             catch (Exception e)
             {
-                //ArgumentNullException
-                //ArgumentOutOfRangeException
-                //IOException
-                //ObjectDisposedException
-                //ArgumentException
-                //InvalidOperationException
-                //DecoderFallbackException
                 Console.WriteLine(e.ToString());
+                if (fileName != null && userName != null) {
+                    settingsForm.BeginInvoke(settingsForm.DownloadStateDelegate, new object[] { "Impossible to riceive " + fileName + " from " + userName, true });
+                }
+                if (connectedSocket.Client!=null) {
+                    connectedSocket.Close();
+                }
             }
         }
     }
