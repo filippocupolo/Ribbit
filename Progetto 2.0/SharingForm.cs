@@ -244,7 +244,7 @@ namespace Progetto_2._0
             //set flagInvoke and close form
             String s;
             sharingFormList.TryRemove(this, out s);
-            settingsForm.BeginInvoke(settingsForm.CloseThreadDelegate, new object[] { Thread.CurrentThread });
+            settingsForm.BeginInvoke(settingsForm.CloseThreadDelegate, new object[] { Thread.CurrentThread, null });
             this.Close();
         }
 

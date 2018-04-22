@@ -334,7 +334,7 @@ namespace Progetto_2._0
         {
             if (PrivateMode.Checked)
             {
-                options.PrivateMode = false;
+                options.PrivateMode = true;
 
                 //close threads
                 if (UDPClientThread != null)
@@ -351,9 +351,7 @@ namespace Progetto_2._0
                         serverTCP.CloseThread(false);
                     }
                 }
-
-
-
+                
             }
             else
             {
@@ -363,7 +361,7 @@ namespace Progetto_2._0
                     RealClose();
                 }
 
-                options.PrivateMode = true;
+                options.PrivateMode = false;
 
                 serverTCP = new ServerTCP(portTCP, options.DestPath, options.RicMode, this);
                 TCPServerThread = new Thread(serverTCP.Execute);
@@ -373,7 +371,6 @@ namespace Progetto_2._0
                 clientUDP = new ClientUDP(options.Name, portTCP, this);
                 UDPClientThread = new Thread(clientUDP.Execute);
                 UDPClientThread.Start();
-
 
             }
             CheckBoxApparence(PrivateMode);
@@ -422,7 +419,7 @@ namespace Progetto_2._0
             }
         }
         
-        private void CloseThreadMethod(Thread thread, String labol)
+        private void CloseThreadMethod(Thread thread, String lable)
         {
             if (thread.IsAlive)
             {
@@ -436,8 +433,12 @@ namespace Progetto_2._0
                 }
             }
 
+            if (lable == null) {
+                return;
+            }
+
             if (!realClose) { 
-                if (labol.Equals(Utilities.ServerUDP)) {
+                if (lable.Equals(Utilities.ServerUDP)) {
 
                     //Initialize serverUDP
                     serverUDP = new ServerUDP(userList, sharingFormList, this);
@@ -445,7 +446,7 @@ namespace Progetto_2._0
                     UDPServerThread.Start();
                     
                 }
-                if (labol.Equals(Utilities.ServerTCP) && options.PrivateMode==false)
+                if (lable.Equals(Utilities.ServerTCP) && options.PrivateMode==false)
                 {
 
                     //get a free port
@@ -461,7 +462,7 @@ namespace Progetto_2._0
                     TCPServerThread.Start();
                     
                 }
-                if (labol.Equals(Utilities.CientUDP) && options.PrivateMode == false)
+                if (lable.Equals(Utilities.CientUDP) && options.PrivateMode == false)
                 {
 
                     //Initialize clientUDP

@@ -48,12 +48,13 @@ namespace Progetto_2._0
                     while (closeClientUDP == false) //must use mutex 
                     {
                         //create payload: 4 byte lenght payload 4 byte port n byte name
-                        int nameSize = Name.Length;
+                        byte[] nameBytes = Encoding.UTF8.GetBytes(Name);
+                        int nameSize = nameBytes.Length;
                         int payloadSize = nameSize + 8;
                         byte[] payload = new byte[payloadSize];
                         Buffer.BlockCopy(BitConverter.GetBytes(payloadSize), 0, payload, 0, 4); //big/little endian               
                         Buffer.BlockCopy(BitConverter.GetBytes(PortTCP), 0, payload, 4, 4);
-                        Buffer.BlockCopy(Encoding.UTF8.GetBytes(Name), 0, payload, 8, nameSize);
+                        Buffer.BlockCopy(nameBytes, 0, payload, 8, nameSize);
 
                         //send messagge
                         udpClient.Send(payload, payloadSize, endPointUDP);
