@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.IO.Pipes;
+using System.Net.NetworkInformation;
 
 namespace Progetto_2._0
 {
@@ -50,7 +51,7 @@ namespace Progetto_2._0
         private Thread UDPServerThread;
 
         private NamedPipeServerStream pipe;
-
+        
         //set delegates
         public delegate void CloseThread(Thread thread, String labol);
         public delegate void DownloadState(String message, Boolean error);
@@ -98,6 +99,9 @@ namespace Progetto_2._0
 
             CheckBoxApparence(PrivateMode);
             CheckBoxApparence(AutomaticReception);
+
+            //set changeNetwork callback
+            NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(AddressChangedCallback);
 
             //set delegates
             CloseThreadDelegate = new CloseThread(this.CloseThreadMethod);
@@ -448,12 +452,16 @@ namespace Progetto_2._0
                 }
                 if (lable.Equals(Utilities.ServerTCP) && options.PrivateMode==false)
                 {
-
                     //get a free port
                     if (!Utilities.FindPort(ref portTCP))
                     {
                         //there are no free ports so close the program
                         RealClose();
+                    }
+
+                    if (clientUDP != null)
+                    {
+                        clientUDP.PortTCP = portTCP;
                     }
 
                     //Initialize serverTCP
@@ -464,6 +472,17 @@ namespace Progetto_2._0
                 }
                 if (lable.Equals(Utilities.CientUDP) && options.PrivateMode == false)
                 {
+                    //get a free port
+                    if (!Utilities.FindPort(ref portTCP))
+                    {
+                        //there are no free ports so close the program
+                        RealClose();
+                    }
+
+                    if (serverTCP != null)
+                    {
+                        serverTCP.PortTCP = portTCP;
+                    }
 
                     //Initialize clientUDP
                     clientUDP = new ClientUDP(options.Name, portTCP, this);
@@ -515,7 +534,7 @@ namespace Progetto_2._0
         }
 
         private void RealClose(){
-
+            
             //hide form
             Hide();
             realClose = true;
@@ -567,9 +586,27 @@ namespace Progetto_2._0
             //exit
             Application.Exit();
         }
-        
+        private void AddressChangedCallback(object sender, EventArgs e)
+        {
+            if (NetworkInterface.GetIsNetworkAvailable())
+            {
+                if (TCPServerThread != null)
+                {
+                    if (TCPServerThread.IsAlive)
+                    {
+                        serverTCP.CloseThread(false);
+                    }
+                }
+            }
+        }
+
         private void PipeCallBack(IAsyncResult result)
         {
+            if (realClose) {
+                MessageBox.Show("The program is closing");
+                return;
+            }
+
             try
             {
                 pipe.EndWaitForConnection(result);

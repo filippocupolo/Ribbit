@@ -170,8 +170,13 @@ namespace Progetto_2._0
                 {
                     settingsForm.BeginInvoke(settingsForm.DownloadStateDelegate, new object[] { "File received correctly", false });
                 }
+
                 file.Flush();
                 file.Close();
+
+                if (!sendingCompleted) {
+                    File.Delete(filepath);
+                }
 
             }catch(Exception ex)
             {

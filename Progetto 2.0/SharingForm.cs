@@ -78,6 +78,7 @@ namespace Progetto_2._0
             }
 
             this.Show();
+            this.Focus();
         }
 
         private void SettingList(){
