@@ -119,8 +119,8 @@ namespace Progetto_2._0
 
         private void SettingsForm_Load(object sender, EventArgs e){
 
-            //set positionform
-            Location = new Point(700, 20);
+            
+            
 
             //set Pipe
             pipe = new NamedPipeServerStream("RibbitPipe", PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
@@ -158,6 +158,7 @@ namespace Progetto_2._0
             {
                 this.LaunchSharingFormMethod(path);
             }
+            
         }
 
         void EditTitleBar()
@@ -262,6 +263,8 @@ namespace Progetto_2._0
 
         private void SettingsIcon_Click(object sender, EventArgs e)
         {
+            Rectangle workingArea = Screen.GetWorkingArea(this);
+            this.Location = new Point(workingArea.Right - Size.Width, workingArea.Bottom - Size.Height);
             this.Show();
         }
 
@@ -306,6 +309,8 @@ namespace Progetto_2._0
         private void NoIcon_DoubleClick(object sender, EventArgs e) {
 
             this.Show();
+            Rectangle workingArea = Screen.GetWorkingArea(this);
+            this.Location = new Point(workingArea.Right - Size.Width, workingArea.Bottom - Size.Height);
         }
 
         private void AutomaticReception_CheckedChanged(object sender, EventArgs e)
@@ -566,12 +571,14 @@ namespace Progetto_2._0
         {
             try
             {
-                int BUFFERSIZE = 200;
                 pipe.EndWaitForConnection(result);
                 pipe.WaitForPipeDrain();
-                byte[] buff = new byte[BUFFERSIZE];
-                pipe.Read(buff, 0, BUFFERSIZE);
-                String arg = Encoding.UTF8.GetString(buff);
+                byte[] buff = new byte[4];
+                pipe.Read(buff, 0, 4);
+                int Buffersize = BitConverter.ToInt32(buff, 0);
+                buff = new byte[Buffersize];
+                pipe.Read(buff, 0, Buffersize);
+                String arg = Encoding.UTF8.GetString(buff);          
                 Array.Clear(buff, 0, buff.Length);
                 pipe.Disconnect();
                 pipe.BeginWaitForConnection(PipeCallBack, pipe);

@@ -45,6 +45,7 @@ namespace Progetto_2._0
                     if (args.Length > 0)
                     {
                         //create SettingsForm passing args
+                        Console.WriteLine(args[0]);
                         settingsForm = new SettingsForm(args[0]);
                     }
                     else
@@ -77,7 +78,10 @@ namespace Progetto_2._0
                         {
 
                             pipe.Connect(3000);
-                            byte[] bytes = Encoding.UTF8.GetBytes(args[0]);
+                            byte[] argbytes = Encoding.UTF8.GetBytes(args[0]);
+                            byte[] bytes = new byte[argbytes.Length + 4];
+                            Buffer.BlockCopy(BitConverter.GetBytes((Int32)argbytes.Length), 0, bytes, 0, 4);
+                            Buffer.BlockCopy(argbytes, 0, bytes, 4, argbytes.Length);
                             pipe.Write(bytes, 0, bytes.Length);
 
                         }

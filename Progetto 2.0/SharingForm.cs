@@ -76,6 +76,8 @@ namespace Progetto_2._0
                 isCreated.setTrue();
                 Monitor.PulseAll(isCreated);
             }
+
+            this.Show();
         }
 
         private void SettingList(){
@@ -110,12 +112,18 @@ namespace Progetto_2._0
 
         private void ChangeItemMethod(User user)
         {
+            bool ok = false;
             for (int i = 0; i < userCollection.Count; i++)
             {
                 if (userCollection[i].IP.Address == user.IP.Address)
                 {
                     userCollection[i] = user;
+                    ok = true;
                     break;
+                }
+                if (!ok)
+                {
+                    //errore
                 }
             }
             
@@ -189,43 +197,45 @@ namespace Progetto_2._0
 
         private void ShareButton_Click(object sender, EventArgs e)
         {
-            if (SharingList.SelectedIndex == -1)
+            try
             {
-                MessageBox.Show("select a user first!");
+                if (SharingList.SelectedIndex == -1)
+                {
+                    MessageBox.Show("select a user first!");
+                }
+                else
+                {
+
+                    int nElements = SharingList.SelectedIndices.Count;
+                    int index;
+
+                    bool IsFolder = CheckPath();
+
+
+
+                    this.Hide();
+
+                    for (int i = 0; i < nElements; i++)
+                    {
+                        index = SharingList.SelectedIndices[i];
+                        Send(sourcePath, IsFolder, userCollection[index].IP);
+                    }
+
+                    foreach (Thread t in threadList)
+                    {
+                        t.Join();
+                    }
+
+                    this.CloseForm();
+                }
+
             }
-            else
+            catch (Exception ex)
             {
 
-                int nElements = SharingList.SelectedIndices.Count;
-                int index;
-
-                bool IsFolder = false;
-
-                try
-                {
-                    IsFolder = CheckPath();
-                }
-                catch (Exception ex) {
-
-                    Console.WriteLine(ex.ToString());
-                    settingsForm.BeginInvoke(settingsForm.DownloadStateDelegate, new object[] { "Unable to open the file", true });
-                    this.Close();
-                }
-
-                this.Hide();
-
-                for (int i = 0; i < nElements; i++)
-                {
-                    index = SharingList.SelectedIndices[i];
-                    Send(sourcePath, IsFolder, userCollection[index].IP);
-                }
-
-                foreach (Thread t in threadList)
-                {
-                    t.Join();
-                }
-
-                this.CloseForm();
+                Console.WriteLine(ex.ToString());
+                settingsForm.BeginInvoke(settingsForm.DownloadStateDelegate, new object[] { "Unable to open the file", true });
+                this.Close();
             }
         }
 
