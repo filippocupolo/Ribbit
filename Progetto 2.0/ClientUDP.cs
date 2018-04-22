@@ -42,7 +42,7 @@ namespace Progetto_2._0
                 {
                     //initialize UdpClient
                     udpClient = new UdpClient();
-
+                   
                     //set end point to multicast 239.168.100.2:64537
                     IPEndPoint endPointUDP = new IPEndPoint(Utilities.multicastEndPoint.Address, Utilities.multicastEndPoint.Port);
 
@@ -56,7 +56,7 @@ namespace Progetto_2._0
                         Buffer.BlockCopy(BitConverter.GetBytes(payloadSize), 0, payload, 0, 4); //big/little endian               
                         Buffer.BlockCopy(BitConverter.GetBytes(PortTCP), 0, payload, 4, 4);
                         Buffer.BlockCopy(nameBytes, 0, payload, 8, nameSize);
-
+                        
                         if (NetworkInterface.GetIsNetworkAvailable()) {
                             
                             //send messagge
@@ -78,7 +78,7 @@ namespace Progetto_2._0
                 }
                 catch (SocketException e)
                 {
-                    Console.WriteLine(e.ErrorCode);
+                    //Console.WriteLine(e.ErrorCode);
                     Console.WriteLine(e.ToString());
                     if (c < 2)
                     {

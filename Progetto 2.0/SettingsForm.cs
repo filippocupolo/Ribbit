@@ -302,17 +302,23 @@ namespace Progetto_2._0
 
         public bool CheckFolderPermission(string folderPath)
         {
+            if (string.IsNullOrEmpty(folderPath)) return false;
+
             try
             {
-                System.IO.DirectoryInfo dirInfo = new System.IO.DirectoryInfo(folderPath);
-                DirectorySecurity dirAC = dirInfo.GetAccessControl(AccessControlSections.Access);
-                return true;
+                DirectorySecurity ds = System.IO.Directory.GetAccessControl(folderPath);
+                if (ds.AreAccessRulesProtected)
+                {
+                    return false;
+                }
+
             }
-            catch (Exception e)
+            catch (UnauthorizedAccessException ex)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(ex.ToString());
                 return false;
             }
+            return true;
         }
 
         private void NoIcon_DoubleClick(object sender, EventArgs e) {
