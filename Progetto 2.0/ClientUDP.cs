@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Net.Sockets;
 using System.Net;
+using System.Net.NetworkInformation;
 
 namespace Progetto_2._0
 {
@@ -56,8 +57,11 @@ namespace Progetto_2._0
                         Buffer.BlockCopy(BitConverter.GetBytes(PortTCP), 0, payload, 4, 4);
                         Buffer.BlockCopy(nameBytes, 0, payload, 8, nameSize);
 
-                        //send messagge
-                        udpClient.Send(payload, payloadSize, endPointUDP);
+                        if (NetworkInterface.GetIsNetworkAvailable()) {
+                            
+                            //send messagge
+                            udpClient.Send(payload, payloadSize, endPointUDP);
+                        }
 
                         //sleep for 2 seconds
                         Thread.Sleep(2000);
@@ -74,6 +78,7 @@ namespace Progetto_2._0
                 }
                 catch (SocketException e)
                 {
+                    Console.WriteLine(e.ErrorCode);
                     Console.WriteLine(e.ToString());
                     if (c < 2)
                     {

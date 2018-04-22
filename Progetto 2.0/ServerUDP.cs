@@ -186,7 +186,6 @@ namespace Progetto_2._0
 
                 try
                 {
-
                     //check if the adress is mine
                     if (!address.Equals(Dns.GetHostAddresses(Dns.GetHostName()).Where(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToArray()[0]))
                     {

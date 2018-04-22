@@ -283,6 +283,11 @@ namespace Progetto_2._0
                 {
                     options.DestPath = SaveFolder.SelectedPath;
                     DestPath.Text = options.DestPath;
+
+                    if (serverTCP != null) {
+                        serverTCP.PathDest = SaveFolder.SelectedPath;
+                    }
+
                 }else{
                     MessageBox.Show("Permission Denied!");
                 }

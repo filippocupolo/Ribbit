@@ -284,7 +284,7 @@ namespace Progetto_2._0
             {
                 Console.WriteLine(e.ToString());
                 if (fileName != null && userName != null) {
-                    settingsForm.BeginInvoke(settingsForm.DownloadStateDelegate, new object[] { "Impossible to riceive " + fileName + " from " + userName, true });
+                    settingsForm.BeginInvoke(settingsForm.DownloadStateDelegate, new object[] { "Impossible to receive " + fileName + " from " + userName, true });
                 }
                 if (connectedSocket.Client!=null) {
                     connectedSocket.Close();
