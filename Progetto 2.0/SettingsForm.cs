@@ -122,10 +122,7 @@ namespace Progetto_2._0
         }
 
         private void SettingsForm_Load(object sender, EventArgs e){
-
             
-            
-
             //set Pipe
             pipe = new NamedPipeServerStream("RibbitPipe", PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
             pipe.BeginWaitForConnection(PipeCallBack, pipe);
@@ -134,9 +131,7 @@ namespace Progetto_2._0
             serverUDP = new ServerUDP(userList, sharingFormList, this);
             UDPServerThread = new Thread(serverUDP.Execute);
             UDPServerThread.Start();
-
-
-
+        
             //if not private mode initialize serverTCP and clientUDP
             if (!options.PrivateMode)
             {
@@ -582,7 +577,7 @@ namespace Progetto_2._0
             {
                 if (pair.Value.IsHandleCreated)
                 {
-                    pair.Value.Invoke(pair.Value.closeThreadDelegate);
+                    pair.Value.BeginInvoke(pair.Value.closeThreadDelegate);
                 }
             }
 

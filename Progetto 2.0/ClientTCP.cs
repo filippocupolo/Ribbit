@@ -96,6 +96,8 @@ namespace Progetto_2._0
                 }
             }
 
+            bool aswerDeclined = false;
+
             try
             {
 
@@ -133,7 +135,10 @@ namespace Progetto_2._0
                     //send the file
                     SendFile(stream);
                 }
-
+                else
+                {
+                    aswerDeclined = true;
+                }
             }
             catch (Exception e) {
 
@@ -193,8 +198,17 @@ namespace Progetto_2._0
             }
 
             //send notifications
-            if (sendingCompleted) { 
-                settingsForm.BeginInvoke(settingsForm.DownloadStateDelegate, new object[] { "File sent correctly", false });
+            if (sendingCompleted) {
+                String msg;
+                if (aswerDeclined)
+                {
+                    msg = "Receiver declined your file/folder";
+                }
+                else
+                {
+                    msg = "File sent correctly";
+                }
+                settingsForm.BeginInvoke(settingsForm.DownloadStateDelegate, new object[] { msg, false });
             }        
         }
 
