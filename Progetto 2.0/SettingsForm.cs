@@ -278,7 +278,7 @@ namespace Progetto_2._0
             if (result == DialogResult.OK)
             {
                 bool checkAccess = CheckFolderPermission(SaveFolder.SelectedPath);
-                //guardo se la cartella ha privilegi di sicurezza
+                //check if folder has got security permission
                 if (checkAccess)
                 {
                     options.DestPath = SaveFolder.SelectedPath;
