@@ -66,7 +66,6 @@ namespace Progetto_2._0
             {
                 try
                 {
-
                     //give a not existing name
                     int c = 0;
                     String zipName = Path.GetFileName(pathFile) + ".zip";
@@ -100,7 +99,6 @@ namespace Progetto_2._0
 
             try
             {
-
                 //initialize socket
                 tcpClient = new TcpClient();
 

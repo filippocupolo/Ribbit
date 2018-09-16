@@ -46,7 +46,7 @@ namespace Progetto_2._0
                     //set end point to multicast 239.168.100.2:64537
                     IPEndPoint endPointUDP = new IPEndPoint(Utilities.multicastEndPoint.Address, Utilities.multicastEndPoint.Port);
 
-                    while (closeClientUDP == false) //must use mutex 
+                    while (closeClientUDP == false) 
                     {
                         //create payload: 4 byte lenght payload 4 byte port n byte name
                         byte[] nameBytes = Encoding.UTF8.GetBytes(Name);

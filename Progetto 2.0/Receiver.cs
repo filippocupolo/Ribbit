@@ -237,8 +237,7 @@ namespace Progetto_2._0
 
                 //receive size of file, username and filename
                 byte[] readData = new byte[dimentionsLenght];
-
-                //non so se è giusto. Capire se read è bloccante
+                
                 stream.ReadTimeout = 10000;
 
                 if (stream.Read(readData, 0, readData.Length)!= dimentionsLenght) {
