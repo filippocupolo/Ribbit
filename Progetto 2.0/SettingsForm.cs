@@ -287,9 +287,7 @@ namespace Progetto_2._0
                     MessageBox.Show("Permission Denied!");
                 }
                 
-                //un po' di controlli
-                //
-
+               
             }
         }
 

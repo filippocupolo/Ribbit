@@ -19,8 +19,7 @@ namespace Progetto_2._0
         Label ProgramName = new Label();
         Panel TitleBar = new Panel();
         Button CloseButton = new Button();
-        //devo aggiungere l'icona
-        //new Icon Icon = new Icon("../../ img / share.ico");
+        
 
         private Options options;
 
